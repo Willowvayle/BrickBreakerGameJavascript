@@ -1,3 +1,24 @@
+const GAMESTATE = {
+    PAUSED: 0,
+    RUNNING: 1,
+    MENU: 2,
+    GAMEOVER: 3,
+    NEWLEVEL: 4,
+    WIN: 5
+};
+
+const level1 = [
+    [0, 1, 1, 0, 0, 0, 0, 1, 1, 0]
+];
+
+const level2 = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 1, 1, 0, 0, 0, 0, 1, 1, 0]
+];
+
+
 // Original index.js
 let canvas = document.getElementById("gameScreen");
 let ctx = canvas.getContext('2d');
@@ -5,7 +26,8 @@ let ctx = canvas.getContext('2d');
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 600;
 
-let game = new Game(GAME_WIDTH, GAME_HEIGHT);
+let game = new Game();
+game.init(GAME_WIDTH, GAME_HEIGHT);
 
 let lastTime = 0;
 
@@ -27,23 +49,16 @@ requestAnimationFrame(gameLoop);
 
 
 // Original game.js
-const GAMESTATE = {
-    PAUSED: 0,
-    RUNNING: 1,
-    MENU: 2,
-    GAMEOVER: 3,
-    NEWLEVEL: 4,
-    WIN: 5
-};
-
 function Game() {
     this.init = function(gameWidth, gameHeight) {
 
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
         this.gamestate = GAMESTATE.MENU;
-        this.paddle = new Paddle(this);
-        this.ball = new Ball(this);
+        this.paddle = new Paddle();
+        this.paddle.init(this);
+        this.ball = new Ball();
+        this.ball.init(this);
 
         this.gameObjects = [];
         this.bricks = [];
@@ -52,7 +67,8 @@ function Game() {
         this.levels = [level1, level2];
         this.currentLevel = 0;
 
-        new InputHandler(this.paddle, this);
+        this.input = new InputHandler();
+        this.input.init(this.paddle, this);
     }
 
     this.start = function() {
@@ -165,24 +181,15 @@ function buildLevel(game, level) {
                     x: 80 * brickIndex,
                     y: 75 + 24 * rowIndex
                 };
-                bricks.push(new Brick(game, position));
+                var newBrick = new Brick();
+                newBrick.init(game, position);
+                bricks.push(newBrick);
             }
         });
     });
 
     return bricks;
 }
-
-const level1 = [
-    [0, 1, 1, 0, 0, 0, 0, 1, 1, 0]
-];
-
-const level2 = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [0, 1, 1, 0, 0, 0, 0, 1, 1, 0]
-];
 // End levels.js
 
 
@@ -364,7 +371,7 @@ function Brick() {
         this.height = 24;
 
         this.toBeDestroyed = false;
-    }
+    };
 
     this.update = function(deltaTime) {
         if(detectCollision(this.game.ball, this)) {
@@ -372,10 +379,10 @@ function Brick() {
 
             this.toBeDestroyed = true;
         }
-    }
+    };
 
     this.draw = function(ctx) {
         ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height);
-    }
+    };
 }
 // End brick.js
